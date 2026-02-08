@@ -85,7 +85,7 @@ This project includes recommended extensions in `.vscode/extensions.json`:
 - **ESLint** - JavaScript/TypeScript linting
 - **Prettier** - Code formatting
 - **TypeScript** - Enhanced TypeScript support
-- **Jest** - Test support
+- **Testing (Vitest)** - Test support (this project uses Vitest; `npm test` runs `vitest run`. You can install a Vitest-focused extension to run and debug tests in VS Code.)
 - **Path Intellisense** - File path autocomplete
 - **IntelliCode** - AI-assisted code completion
 
