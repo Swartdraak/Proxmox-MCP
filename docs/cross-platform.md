@@ -271,9 +271,15 @@ node dist/index.js
 
 #### Issue: Line ending problems on Windows
 **Solution**: 
+The repository includes a `.gitattributes` file that enforces LF (`\n`) line endings in both the repository and your working tree on all platforms. Normally you should not need any extra Git configuration. If you have customized your Git settings and are seeing line-ending warnings or unexpected diffs, reset line-ending handling **for this repository only**:
 ```powershell
-# Configure git to handle line endings
-git config --global core.autocrlf true
+# Configure Git for this repository (no global changes)
+git config core.autocrlf false
+git config core.eol lf
+
+# (Optional) Re-normalize line endings in the working tree
+git rm --cached -r .
+git reset --hard
 ```
 
 #### Issue: Build fails on Windows
