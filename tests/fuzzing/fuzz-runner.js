@@ -6,8 +6,14 @@
  * @ts-nocheck
  */
 
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Dynamic import for ES module
-import('../../../dist/security/validator.js').then((module) => {
+import(join(__dirname, '../../dist/security/validator.js')).then((module) => {
   const { InputValidator } = module;
 
   /**
