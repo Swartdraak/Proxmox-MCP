@@ -48,10 +48,12 @@ jobs:
         run: npm run typecheck
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    name: Test on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
@@ -70,11 +72,11 @@ jobs:
       
       - name: Run tests with coverage
         run: npm run test:coverage
-        if: matrix.node-version == 18
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 18
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
-        if: matrix.node-version == 18
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 18
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
@@ -124,9 +126,13 @@ jobs:
         run: npm run test:fuzz
 
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     needs: [lint, typecheck, test, security]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       
@@ -142,8 +148,18 @@ jobs:
       - name: Build
         run: npm run build
       
+      - name: Verify build artifacts
+        shell: bash
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "Error: dist/index.js not found"
+            exit 1
+          fi
+          echo "Build artifacts verified successfully"
+      
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: dist
           path: dist/

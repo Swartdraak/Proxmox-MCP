@@ -11,11 +11,12 @@
     "dist/**/*",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "docs/**/*"
   ],
   "scripts": {
     "build": "tsc",
-    "postbuild": "node -e \"try{require('fs').chmodSync('dist/index.js',0o755)}catch(e){}\"",
+    "postbuild": "node -e \"const fs = require('fs'); const os = require('os'); if (os.platform() !== 'win32') { try { fs.chmodSync('dist/index.js', 0o755); } catch (e) { console.warn('Could not set executable permission:', e.message); } }\"",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "test": "vitest run",
@@ -39,7 +40,12 @@
     "proxmox-ve",
     "virtualization",
     "ai",
-    "llm"
+    "llm",
+    "claude",
+    "github-copilot",
+    "ide-integration",
+    "typescript",
+    "cross-platform"
   ],
   "author": "Swartdraak",
   "license": "MIT",
