@@ -11,7 +11,8 @@
     "dist/**/*",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "docs/**/*"
   ],
   "scripts": {
     "build": "tsc",
@@ -39,7 +40,12 @@
     "proxmox-ve",
     "virtualization",
     "ai",
-    "llm"
+    "llm",
+    "claude",
+    "github-copilot",
+    "ide-integration",
+    "typescript",
+    "cross-platform"
   ],
   "author": "Swartdraak",
   "license": "MIT",
