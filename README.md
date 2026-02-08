@@ -269,6 +269,8 @@ npm run test:fuzz
 - [Architecture Overview](docs/architecture.md)
 - [Security Guidelines](docs/security.md)
 - [Troubleshooting Guide](docs/troubleshooting.md)
+- [Cross-Platform Development Guide](docs/cross-platform.md)
+- [IDE Integration Guide](docs/ide-integration.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 
 ## 🤝 Contributing
