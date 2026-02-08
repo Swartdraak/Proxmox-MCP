@@ -15,6 +15,8 @@ export class ProxmoxClient {
   private csrfToken?: string;
   private securityManager: SecurityManager;
   private rateLimiter: RateLimiter;
+  private retryCount = 0;
+  private readonly maxRetries = 3;
 
   constructor(config: ProxmoxConfig) {
     // Validate configuration
@@ -35,9 +37,6 @@ export class ProxmoxClient {
       baseURL: `https://${this.config.host}:${this.config.port ?? 8006}/api2/json`,
       timeout: this.config.timeout ?? 30000,
       httpsAgent,
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     // Add request interceptor for authentication
@@ -54,7 +53,7 @@ export class ProxmoxClient {
   }
 
   /**
-   * Authenticate with Proxmox VE
+   * Authenticate with Proxmox VE using form-encoded credentials
    */
   async authenticate(): Promise<void> {
     try {
@@ -63,15 +62,7 @@ export class ProxmoxClient {
         throw new Error('Rate limit exceeded. Please try again later.');
       }
 
-      let authData: { username: string; password?: string; tokenid?: string };
-
-      if (this.config.password) {
-        // Password authentication
-        authData = {
-          username: `${this.config.username}@${this.config.realm ?? 'pam'}`,
-          password: this.config.password,
-        };
-      } else if (this.config.tokenId && this.config.tokenSecret) {
+      if (this.config.tokenId && this.config.tokenSecret) {
         // API token authentication
         const tokenHeader = `PVEAPIToken=${this.config.username}@${this.config.realm ?? 'pam'}!${this.config.tokenId}=${this.config.tokenSecret}`;
         this.client.defaults.headers.common['Authorization'] = tokenHeader;
@@ -79,15 +70,27 @@ export class ProxmoxClient {
         // Log successful authentication
         this.securityManager.logAccess('authenticate', 'api_token', 'success');
         return;
-      } else {
+      }
+
+      if (!this.config.password) {
         throw new Error('Invalid authentication configuration');
       }
 
-      const response = await this.client.post('/access/ticket', authData);
+      // Password authentication with form encoding
+      const formData = new URLSearchParams();
+      formData.append('username', `${this.config.username}@${this.config.realm ?? 'pam'}`);
+      formData.append('password', this.config.password);
+
+      const response = await this.client.post('/access/ticket', formData.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
 
       if (response.data?.data?.ticket && response.data?.data?.CSRFPreventionToken) {
         this.ticket = response.data.data.ticket;
         this.csrfToken = response.data.data.CSRFPreventionToken;
+        this.retryCount = 0; // Reset retry count on successful auth
         
         // Log successful authentication
         this.securityManager.logAccess('authenticate', this.config.username, 'success');
@@ -102,7 +105,7 @@ export class ProxmoxClient {
   }
 
   /**
-   * Make a secure API request with rate limiting
+   * Make a secure API request with rate limiting and bounded retry
    */
   async request<T>(
     method: string,
@@ -130,6 +133,9 @@ export class ProxmoxClient {
 
       // Log successful request
       this.securityManager.logAccess(path, this.config.username, 'success');
+      
+      // Reset retry count on successful request
+      this.retryCount = 0;
 
       return response.data?.data as T;
     } catch (error) {
@@ -137,10 +143,19 @@ export class ProxmoxClient {
       this.securityManager.logAccess(path, this.config.username, 'failure',
         error instanceof Error ? error.message : 'Unknown error');
 
-      // Handle authentication expiration
+      // Handle authentication expiration with retry limit
       if (axios.isAxiosError(error) && error.response?.status === 401) {
+        if (this.retryCount >= this.maxRetries) {
+          throw new Error(`Authentication failed after ${this.maxRetries} retries. Please check credentials.`);
+        }
+        
+        this.retryCount++;
         this.ticket = undefined;
         this.csrfToken = undefined;
+        
+        // Wait briefly before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * this.retryCount));
+        
         await this.authenticate();
         return this.request(method, path, data, config);
       }
@@ -180,7 +195,7 @@ export class ProxmoxClient {
   /**
    * Get security audit logs
    */
-  getAuditLogs(): Array<{ timestamp: number; operation: string; user: string; result: string; details?: string }> {
+  getAuditLogs(): Array<{ timestamp: number; operation: string; user: string; resource: string; result: 'success' | 'failure'; details?: string }> {
     return this.securityManager.getAuditLogs();
   }
 }

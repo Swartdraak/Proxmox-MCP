@@ -8,7 +8,7 @@ export class SecurityManager {
   private maxLogSize = 10000;
 
   /**
-   * Log an access attempt
+   * Log an access attempt with sanitization to prevent log injection
    */
   logAccess(
     operation: string,
@@ -32,10 +32,15 @@ export class SecurityManager {
       this.auditLogs = this.auditLogs.slice(-this.maxLogSize);
     }
 
-    // Also log to console for monitoring
+    // Also log to console for monitoring with sanitized inputs
+    const safeOperation = this.sanitizeInput(operation);
+    const safeUser = this.sanitizeInput(user);
+    const safeDetails = details ? this.sanitizeInput(details) : undefined;
     const logLevel = result === 'success' ? 'info' : 'warn';
     // eslint-disable-next-line security/detect-object-injection
-    console[logLevel](`[AUDIT] ${operation} by ${user}: ${result}${details ? ` - ${details}` : ''}`);
+    console[logLevel](
+      `[AUDIT] ${safeOperation} by ${safeUser}: ${result}${safeDetails ? ` - ${safeDetails}` : ''}`
+    );
   }
 
   /**

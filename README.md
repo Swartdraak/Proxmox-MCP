@@ -31,7 +31,6 @@ An industry-standard, security-first [Model Context Protocol (MCP)](https://mode
 
 - **🧪 Well Tested**: Comprehensive test coverage
   - Unit tests with Vitest
-  - Integration tests
   - Fuzzing tests for security
   - >80% code coverage
 

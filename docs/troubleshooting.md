@@ -447,4 +447,4 @@ A: Yes, the server works on Windows, macOS, and Linux.
 A: Absolutely! See CONTRIBUTING.md for guidelines.
 
 ### Q: How do I report security issues?
-A: Email security concerns to [security email]. Do not open public issues for security vulnerabilities.
+A: Report security concerns privately using [GitHub Security Advisories](https://github.com/Swartdraak/Proxmox-MCP/security/advisories/new). Do not open public issues for security vulnerabilities.

@@ -1,6 +1,21 @@
 import { z } from 'zod';
 
 /**
+ * VMID validation schema
+ */
+export const VMIDSchema = z.number().int().min(100).max(999999999);
+
+/**
+ * Node name validation schema
+ */
+export const NodeNameSchema = z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/);
+
+/**
+ * Storage name validation schema with character whitelist
+ */
+export const StorageNameSchema = z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
+
+/**
  * Configuration schema with comprehensive validation
  */
 export const ProxmoxConfigSchema = z.object({
@@ -24,7 +39,7 @@ export const ProxmoxConfigSchema = z.object({
  * VM creation parameters schema
  */
 export const VMCreateParamsSchema = z.object({
-  node: z.string().min(1),
+  node: NodeNameSchema,
   vmid: z.number().int().min(100).max(999999999),
   name: z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/).optional(),
   cores: z.number().int().min(1).max(128).default(1),
@@ -40,7 +55,7 @@ export const VMCreateParamsSchema = z.object({
  * Container creation parameters schema
  */
 export const ContainerCreateParamsSchema = z.object({
-  node: z.string().min(1),
+  node: NodeNameSchema,
   vmid: z.number().int().min(100).max(999999999),
   hostname: z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/).optional(),
   cores: z.number().int().min(1).max(128).default(1),
@@ -51,21 +66,6 @@ export const ContainerCreateParamsSchema = z.object({
   net0: z.string().optional(),
   storage: z.string().default('local-lvm'),
 });
-
-/**
- * VMID validation schema
- */
-export const VMIDSchema = z.number().int().min(100).max(999999999);
-
-/**
- * Node name validation schema
- */
-export const NodeNameSchema = z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/);
-
-/**
- * Storage name validation schema
- */
-export const StorageNameSchema = z.string().min(1).max(100);
 
 /**
  * Operation type validation

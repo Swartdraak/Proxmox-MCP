@@ -294,7 +294,7 @@ CMD ["npm", "start"]
 If you discover a security vulnerability:
 
 1. **Do NOT open a public issue**
-2. **Email security concerns** to: [security email]
+2. **Report via GitHub Security Advisories**: https://github.com/Swartdraak/Proxmox-MCP/security/advisories/new
 3. **Include detailed information**
 4. **Allow time for fix** before disclosure
 

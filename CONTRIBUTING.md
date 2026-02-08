@@ -154,7 +154,7 @@ src/
 
 **Do not open public issues for security vulnerabilities.**
 
-Instead, email security concerns to: [your-email@example.com]
+Instead, report security concerns via [GitHub Security Advisories](https://github.com/Swartdraak/Proxmox-MCP/security/advisories/new).
 
 Include:
 - Description of the vulnerability
