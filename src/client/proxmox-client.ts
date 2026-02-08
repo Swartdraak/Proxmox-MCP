@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import https from 'https';
+import { URLSearchParams } from 'url';
 import { ProxmoxConfig } from '../types/index.js';
 import { ProxmoxConfigSchema } from '../types/schemas.js';
 import { SecurityManager } from '../security/manager.js';
