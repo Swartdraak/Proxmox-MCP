@@ -19,7 +19,7 @@ export class VMTools {
     for (const node of nodes) {
       try {
         const vms = await this.client.get<ProxmoxVM[]>(`/nodes/${node.node}/qemu`);
-        allVMs.push(...vms.map(vm => ({ ...vm, node: node.node })));
+        allVMs.push(...vms.map((vm) => ({ ...vm, node: node.node })));
       } catch (error) {
         console.warn(`Failed to list VMs for node ${node.node}:`, error);
       }

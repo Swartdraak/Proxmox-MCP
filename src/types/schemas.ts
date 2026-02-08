@@ -8,32 +8,42 @@ export const VMIDSchema = z.number().int().min(100).max(999999999);
 /**
  * Node name validation schema
  */
-export const NodeNameSchema = z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/);
+export const NodeNameSchema = z
+  .string()
+  .min(1)
+  .max(63)
+  .regex(/^[a-zA-Z0-9-]+$/);
 
 /**
  * Storage name validation schema with character whitelist
  */
-export const StorageNameSchema = z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
+export const StorageNameSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-zA-Z0-9_-]+$/);
 
 /**
  * Configuration schema with comprehensive validation
  */
-export const ProxmoxConfigSchema = z.object({
-  host: z.string().min(1, 'Host is required').regex(/^[a-zA-Z0-9.-]+$/, 'Invalid host format'),
-  port: z.number().int().min(1).max(65535).default(8006),
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().optional(),
-  tokenId: z.string().optional(),
-  tokenSecret: z.string().optional(),
-  realm: z.string().default('pam'),
-  verifySSL: z.boolean().default(true),
-  timeout: z.number().int().min(1000).max(60000).default(30000),
-}).refine(
-  (data) => data.password || (data.tokenId && data.tokenSecret),
-  {
+export const ProxmoxConfigSchema = z
+  .object({
+    host: z
+      .string()
+      .min(1, 'Host is required')
+      .regex(/^[a-zA-Z0-9.-]+$/, 'Invalid host format'),
+    port: z.number().int().min(1).max(65535).default(8006),
+    username: z.string().min(1, 'Username is required'),
+    password: z.string().optional(),
+    tokenId: z.string().optional(),
+    tokenSecret: z.string().optional(),
+    realm: z.string().default('pam'),
+    verifySSL: z.boolean().default(true),
+    timeout: z.number().int().min(1000).max(60000).default(30000),
+  })
+  .refine((data) => data.password || (data.tokenId && data.tokenSecret), {
     message: 'Either password or both tokenId and tokenSecret must be provided',
-  }
-);
+  });
 
 /**
  * VM creation parameters schema
@@ -41,7 +51,12 @@ export const ProxmoxConfigSchema = z.object({
 export const VMCreateParamsSchema = z.object({
   node: NodeNameSchema,
   vmid: z.number().int().min(100).max(999999999),
-  name: z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/).optional(),
+  name: z
+    .string()
+    .min(1)
+    .max(63)
+    .regex(/^[a-zA-Z0-9-]+$/)
+    .optional(),
   cores: z.number().int().min(1).max(128).default(1),
   memory: z.number().int().min(16).max(8388608).default(512),
   disk: z.string().optional(),
@@ -57,7 +72,12 @@ export const VMCreateParamsSchema = z.object({
 export const ContainerCreateParamsSchema = z.object({
   node: NodeNameSchema,
   vmid: z.number().int().min(100).max(999999999),
-  hostname: z.string().min(1).max(63).regex(/^[a-zA-Z0-9-]+$/).optional(),
+  hostname: z
+    .string()
+    .min(1)
+    .max(63)
+    .regex(/^[a-zA-Z0-9-]+$/)
+    .optional(),
   cores: z.number().int().min(1).max(128).default(1),
   memory: z.number().int().min(16).max(8388608).default(512),
   rootfs: z.string().optional(),

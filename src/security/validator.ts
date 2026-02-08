@@ -50,7 +50,7 @@ export class InputValidator {
       const octets = ipv4Match.slice(1).map(Number);
       return octets.every((octet) => octet >= 0 && octet <= 255);
     }
-    
+
     // IPv6 validation (basic) - intentionally simple for security
     // eslint-disable-next-line security/detect-unsafe-regex
     const ipv6Regex = /^([0-9a-fA-F]{0,4}:){7}[0-9a-fA-F]{0,4}$/;

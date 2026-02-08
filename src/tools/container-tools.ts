@@ -19,7 +19,7 @@ export class ContainerTools {
     for (const node of nodes) {
       try {
         const containers = await this.client.get<ProxmoxContainer[]>(`/nodes/${node.node}/lxc`);
-        allContainers.push(...containers.map(ct => ({ ...ct, node: node.node })));
+        allContainers.push(...containers.map((ct) => ({ ...ct, node: node.node })));
       } catch (error) {
         console.warn(`Failed to list containers for node ${node.node}:`, error);
       }

@@ -69,7 +69,9 @@ class ProxmoxMCPServer {
     }
 
     if (!config.password && (!config.tokenId || !config.tokenSecret)) {
-      throw new Error('Either PROXMOX_PASSWORD or both PROXMOX_TOKEN_ID and PROXMOX_TOKEN_SECRET must be provided');
+      throw new Error(
+        'Either PROXMOX_PASSWORD or both PROXMOX_TOKEN_ID and PROXMOX_TOKEN_SECRET must be provided'
+      );
     }
 
     this.client = new ProxmoxClient(config);
@@ -356,14 +358,22 @@ class ProxmoxMCPServer {
         } else if (name === 'start_vm') {
           result = await this.vmTools!.startVM(args.node as string, args.vmid as number);
         } else if (name === 'stop_vm') {
-          result = await this.vmTools!.stopVM(args.node as string, args.vmid as number, args.force as boolean);
+          result = await this.vmTools!.stopVM(
+            args.node as string,
+            args.vmid as number,
+            args.force as boolean
+          );
         } else if (name === 'restart_vm') {
           result = await this.vmTools!.restartVM(args.node as string, args.vmid as number);
         } else if (name === 'create_vm') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result = await this.vmTools!.createVM(args as any);
         } else if (name === 'delete_vm') {
-          result = await this.vmTools!.deleteVM(args.node as string, args.vmid as number, args.purge as boolean);
+          result = await this.vmTools!.deleteVM(
+            args.node as string,
+            args.vmid as number,
+            args.purge as boolean
+          );
         } else if (name === 'clone_vm') {
           result = await this.vmTools!.cloneVM(
             args.node as string,
@@ -379,16 +389,30 @@ class ProxmoxMCPServer {
         else if (name === 'list_containers') {
           result = await this.containerTools!.listContainers();
         } else if (name === 'get_container_status') {
-          result = await this.containerTools!.getContainerStatus(args.node as string, args.vmid as number);
+          result = await this.containerTools!.getContainerStatus(
+            args.node as string,
+            args.vmid as number
+          );
         } else if (name === 'start_container') {
-          result = await this.containerTools!.startContainer(args.node as string, args.vmid as number);
+          result = await this.containerTools!.startContainer(
+            args.node as string,
+            args.vmid as number
+          );
         } else if (name === 'stop_container') {
-          result = await this.containerTools!.stopContainer(args.node as string, args.vmid as number, args.force as boolean);
+          result = await this.containerTools!.stopContainer(
+            args.node as string,
+            args.vmid as number,
+            args.force as boolean
+          );
         } else if (name === 'create_container') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result = await this.containerTools!.createContainer(args as any);
         } else if (name === 'delete_container') {
-          result = await this.containerTools!.deleteContainer(args.node as string, args.vmid as number, args.purge as boolean);
+          result = await this.containerTools!.deleteContainer(
+            args.node as string,
+            args.vmid as number,
+            args.purge as boolean
+          );
         }
         // Node operations
         else if (name === 'list_nodes') {
@@ -400,9 +424,16 @@ class ProxmoxMCPServer {
         else if (name === 'list_storage') {
           result = await this.storageTools!.listStorage();
         } else if (name === 'get_storage_status') {
-          result = await this.storageTools!.getStorageStatus(args.node as string, args.storage as string);
+          result = await this.storageTools!.getStorageStatus(
+            args.node as string,
+            args.storage as string
+          );
         } else if (name === 'list_storage_content') {
-          result = await this.storageTools!.listStorageContent(args.node as string, args.storage as string, args.content as string);
+          result = await this.storageTools!.listStorageContent(
+            args.node as string,
+            args.storage as string,
+            args.content as string
+          );
         } else {
           throw new Error(`Unknown tool: ${name}`);
         }

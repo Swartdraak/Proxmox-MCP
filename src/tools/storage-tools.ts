@@ -28,11 +28,7 @@ export class StorageTools {
   /**
    * List storage content
    */
-  async listStorageContent(
-    node: string,
-    storage: string,
-    content?: string
-  ): Promise<unknown[]> {
+  async listStorageContent(node: string, storage: string, content?: string): Promise<unknown[]> {
     NodeNameSchema.parse(node);
     StorageNameSchema.parse(storage);
 
@@ -59,7 +55,9 @@ export class StorageTools {
     NodeNameSchema.parse(node);
     StorageNameSchema.parse(storage);
 
-    await this.client.delete(`/nodes/${node}/storage/${storage}/content/${encodeURIComponent(volid)}`);
+    await this.client.delete(
+      `/nodes/${node}/storage/${storage}/content/${encodeURIComponent(volid)}`
+    );
     return `Content ${volid} deleted from storage ${storage} successfully`;
   }
 }
