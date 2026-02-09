@@ -109,8 +109,6 @@ Add to your Claude configuration file:
 
 ## Available Tools
 
-## Available Tools
-
 ### VMs
 
 - `list_vms` - List all virtual machines
@@ -253,32 +251,15 @@ npm run clean && npm run build
 
 ```
 src/
-├── index.ts              # Main server entry point
-├── client/               # Proxmox API client
-│   └── proxmox-client.ts
-├── tools/                # MCP tools
-│   ├── vm-tools.ts
-│   ├── container-tools.ts
-│   ├── node-tools.ts
-│   └── storage-tools.ts
-├── security/             # Security components
-│   ├── manager.ts
-│   ├── rate-limiter.ts
-│   └── validator.ts
-├── types/                # Type definitions
-│   ├── index.ts
-│   └── schemas.ts
-└── config/               # Configuration
-    └── loader.ts
+└── index.ts              # Main server entry point
 ```
 
 ### Testing
 
 ```bash
-# Run tests
+# This project does not yet include automated tests.
+# Running the default test script will simply report that no tests are defined:
 npm test
-
-# Note: Test coverage is currently being developed
 ```
 
 ### Contributing
@@ -313,11 +294,10 @@ When reporting issues, please include:
 
 The Proxmox MCP Server is built with security as a top priority:
 
-- **Input Validation**: All inputs are validated and sanitized using Zod schemas
+- **Input Validation**: All inputs are validated and sanitized using standard TypeScript checks
 - **TLS/SSL Support**: Full support for SSL/TLS certificate verification
 - **Secure Credentials**: Credentials are never logged or exposed
 - **Minimal API Surface**: Only essential Proxmox API endpoints are exposed
-- **Rate Limiting**: Built-in protection against excessive API calls
 - **API Token Support**: Recommended authentication method with granular permissions
 - **No Credential Storage**: Credentials are passed via environment variables only
 
@@ -330,6 +310,7 @@ The Proxmox MCP Server is built with security as a top priority:
 5. **Regular Updates**: Keep the MCP server updated to get security patches
 6. **Network Security**: Ensure Proxmox API is not exposed to untrusted networks
 7. **Audit Access**: Regularly review Proxmox audit logs for unauthorized access
+8. **Rate Limiting**: Deploy behind a reverse proxy or API gateway (e.g., nginx, Caddy) that enforces rate limits appropriate for your environment
 
 ## Troubleshooting
 

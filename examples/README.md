@@ -48,9 +48,14 @@ Add to your VS Code `settings.json`:
 
 ### Cursor
 
-**macOS/Linux**: 
+**Linux**: 
 ```
 ~/.config/Cursor/User/globalStorage/settings.json
+```
+
+**macOS**:
+```
+~/Library/Application Support/Cursor/User/globalStorage/settings.json
 ```
 
 **Windows**: 
@@ -128,7 +133,7 @@ All examples include the following environment variables:
 
 - `PROXMOX_HOST` - Your Proxmox server hostname or IP address (required)
 - `PROXMOX_PORT` - Proxmox API port (default: 8006, optional)
-- `PROXMOX_USERNAME` - Proxmox username (default: root, required)
+- `PROXMOX_USERNAME` - Proxmox username (often root, required)
 - `PROXMOX_TOKEN_ID` - API token ID (required for token authentication)
 - `PROXMOX_TOKEN_SECRET` - API token secret (required for token authentication)
 - `PROXMOX_REALM` - Authentication realm (default: pam, optional)

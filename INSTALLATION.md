@@ -72,7 +72,7 @@ This is the recommended method for most users. It's quick, simple, and automatic
 sudo npm install -g @swartdraak/proxmox-mcp-server
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### User-level Installation (without sudo)
@@ -89,7 +89,7 @@ export PATH=~/.npm-global/bin:$PATH
 npm install -g @swartdraak/proxmox-mcp-server
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### Using npx (No Installation Required)
@@ -110,7 +110,7 @@ Open **PowerShell** or **Command Prompt** as Administrator:
 npm install -g @swartdraak/proxmox-mcp-server
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### User-level Installation (without Administrator)
@@ -119,13 +119,13 @@ Open **PowerShell** or **Command Prompt**:
 
 ```powershell
 # Install to user directory
-npm install -g @swartdraak/proxmox-mcp-server --prefix %APPDATA%\npm
+npm install -g @swartdraak/proxmox-mcp-server --prefix $env:APPDATA\npm
 
 # Add to PATH if not already added
 # The npm global bin directory is usually already in PATH on Windows
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### Using npx (No Installation Required)
@@ -144,7 +144,7 @@ npx @swartdraak/proxmox-mcp-server
 sudo npm install -g @swartdraak/proxmox-mcp-server
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### User-level Installation (without sudo)
@@ -162,7 +162,7 @@ source ~/.zshrc
 npm install -g @swartdraak/proxmox-mcp-server
 
 # Verify installation
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 #### Using npx (No Installation Required)
@@ -209,7 +209,7 @@ node dist/index.js --help
 sudo npm link
 
 # Now you can run from anywhere
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 ### Windows Repository Installation
@@ -245,7 +245,7 @@ Run PowerShell as Administrator:
 npm link
 
 # Now you can run from anywhere
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 ### macOS Repository Installation
@@ -278,27 +278,14 @@ node dist/index.js --help
 sudo npm link
 
 # Now you can run from anywhere
-proxmox-mcp-server --version
+proxmox-mcp-server
 ```
 
 ## Verification
 
-After installation, verify that the Proxmox MCP Server is correctly installed:
+After installation, you can verify that the Proxmox MCP Server is correctly installed by starting the server and testing the connection to your Proxmox instance.
 
-### Check Version
-
-```bash
-# If installed globally or linked
-proxmox-mcp-server --version
-
-# If using npx
-npx @swartdraak/proxmox-mcp-server --version
-
-# If built from source
-node dist/index.js --version
-```
-
-### Test Connection (Optional)
+### Test Connection
 
 You can test the connection to your Proxmox server by setting environment variables and running the server:
 
@@ -309,13 +296,18 @@ export PROXMOX_USERNAME="root"
 export PROXMOX_TOKEN_ID="your-token-id"
 export PROXMOX_TOKEN_SECRET="your-token-secret"
 
-# Run the server
+# Run the server (it will start and wait for MCP requests)
+# If installed globally or linked
 proxmox-mcp-server
-# or
+
+# If using npx
 npx @swartdraak/proxmox-mcp-server
-# or (from source)
+
+# If built from source
 npm start
 ```
+
+The server will start successfully if your credentials are valid. Press Ctrl+C to stop the server.
 
 ## Environment Configuration
 
