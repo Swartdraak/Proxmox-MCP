@@ -173,11 +173,15 @@ Include:
 
 ## Release Process
 
-1. Update version in package.json
-2. Update CHANGELOG.md
-3. Create a git tag: `git tag -a v1.x.x -m "Release v1.x.x"`
-4. Push tag: `git push origin v1.x.x`
-5. GitHub Actions will automatically publish to npm
+The project has an automated release process for creating GitHub releases and publishing to npm.
+
+For detailed information about the release process, versioning strategy, and publishing rules, see [RELEASE.md](RELEASE.md).
+
+**Quick Summary:**
+- Push a version tag (e.g., `v1.0.0`) to trigger automated releases
+- GitHub releases are created for all versions
+- npm publishing is conditional based on version type and whether it's a bugfix
+- See [RELEASE.md](RELEASE.md) for complete details and examples
 
 ## Questions?
 

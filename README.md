@@ -105,6 +105,7 @@ Add to your Claude configuration file:
 - **[Installation Guide](INSTALLATION.md)** - Detailed installation instructions for Linux, Windows, and macOS
 - **[IDE Configuration Guide](IDE_CONFIGURATION.md)** - Setup instructions for all supported IDEs and AI assistants
 - **[Contributing Guide](CONTRIBUTING.md)** - Guidelines for contributing to the project
+- **[Release Process](RELEASE.md)** - Automated release and publishing process
 - **[Changelog](CHANGELOG.md)** - Version history and updates
 
 ## Available Tools
