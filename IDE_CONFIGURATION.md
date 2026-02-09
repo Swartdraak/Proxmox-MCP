@@ -12,7 +12,7 @@ This guide provides detailed configuration instructions for integrating the Prox
 - [Continue](#continue)
 - [Cline (Roo-Cline)](#cline-roo-cline)
 - [Zed](#zed)
-- [Other MCP-Compatible IDEs](#other-mcp-compatible-idides)
+- [Other MCP-Compatible IDEs](#other-mcp-compatible-ides)
 - [Troubleshooting](#troubleshooting)
 
 ## Overview
@@ -94,6 +94,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_PORT": "8006",
         "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
@@ -117,6 +118,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_PORT": "8006",
         "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
@@ -141,6 +143,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "command": "proxmox-mcp-server",
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -158,6 +161,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "command": "proxmox-mcp-server",
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -178,6 +182,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "args": ["/home/username/Proxmox-MCP/dist/index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -196,6 +201,7 @@ Claude Desktop is an AI assistant application that supports MCP servers for exte
       "args": ["C:\\Users\\YourUsername\\Proxmox-MCP\\dist\\index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -232,6 +238,7 @@ Visual Studio Code supports MCP through extensions like the official MCP extensi
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -250,6 +257,7 @@ Visual Studio Code supports MCP through extensions like the official MCP extensi
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -267,6 +275,7 @@ Visual Studio Code supports MCP through extensions like the official MCP extensi
       "command": "proxmox-mcp-server",
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -285,6 +294,7 @@ Visual Studio Code supports MCP through extensions like the official MCP extensi
       "args": ["/home/username/Proxmox-MCP/dist/index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -303,6 +313,7 @@ Visual Studio Code supports MCP through extensions like the official MCP extensi
       "args": ["C:\\Users\\YourUsername\\Proxmox-MCP\\dist\\index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -350,6 +361,7 @@ or create a `.cursor/config.json` in your project directory.
         "args": ["-y", "@swartdraak/proxmox-mcp-server"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -370,6 +382,7 @@ or create a `.cursor/config.json` in your project directory.
         "args": ["-y", "@swartdraak/proxmox-mcp-server"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -389,6 +402,7 @@ or create a `.cursor/config.json` in your project directory.
         "command": "proxmox-mcp-server",
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -409,6 +423,7 @@ or create a `.cursor/config.json` in your project directory.
         "args": ["/home/username/Proxmox-MCP/dist/index.js"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -429,6 +444,7 @@ or create a `.cursor/config.json` in your project directory.
         "args": ["C:\\Users\\YourUsername\\Proxmox-MCP\\dist\\index.js"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -469,6 +485,7 @@ Continue is a popular AI coding assistant extension for VS Code and JetBrains ID
         "args": ["-y", "@swartdraak/proxmox-mcp-server"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -491,6 +508,7 @@ Continue is a popular AI coding assistant extension for VS Code and JetBrains ID
         "args": ["-y", "@swartdraak/proxmox-mcp-server"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -512,6 +530,7 @@ Continue is a popular AI coding assistant extension for VS Code and JetBrains ID
         "command": "proxmox-mcp-server",
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -534,6 +553,7 @@ Continue is a popular AI coding assistant extension for VS Code and JetBrains ID
         "args": ["/home/username/Proxmox-MCP/dist/index.js"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -556,6 +576,7 @@ Continue is a popular AI coding assistant extension for VS Code and JetBrains ID
         "args": ["C:\\Users\\YourUsername\\Proxmox-MCP\\dist\\index.js"],
         "env": {
           "PROXMOX_HOST": "proxmox.example.com",
+          "PROXMOX_USERNAME": "root",
           "PROXMOX_TOKEN_ID": "your-token-id",
           "PROXMOX_TOKEN_SECRET": "your-token-secret"
         }
@@ -596,6 +617,7 @@ Cline (formerly Roo-Cline) is a VS Code extension that provides AI-assisted codi
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -614,6 +636,7 @@ Cline (formerly Roo-Cline) is a VS Code extension that provides AI-assisted codi
       "args": ["-y", "@swartdraak/proxmox-mcp-server"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -631,6 +654,7 @@ Cline (formerly Roo-Cline) is a VS Code extension that provides AI-assisted codi
       "command": "proxmox-mcp-server",
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -649,6 +673,7 @@ Cline (formerly Roo-Cline) is a VS Code extension that provides AI-assisted codi
       "args": ["/home/username/Proxmox-MCP/dist/index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -667,6 +692,7 @@ Cline (formerly Roo-Cline) is a VS Code extension that provides AI-assisted codi
       "args": ["C:\\Users\\YourUsername\\Proxmox-MCP\\dist\\index.js"],
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -712,6 +738,7 @@ Zed is a high-performance code editor with built-in MCP support.
       },
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -732,6 +759,7 @@ Zed is a high-performance code editor with built-in MCP support.
       },
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -751,6 +779,7 @@ Zed is a high-performance code editor with built-in MCP support.
       },
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -771,6 +800,7 @@ Zed is a high-performance code editor with built-in MCP support.
       },
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -791,6 +821,7 @@ Zed is a high-performance code editor with built-in MCP support.
       },
       "env": {
         "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_USERNAME": "root",
         "PROXMOX_TOKEN_ID": "your-token-id",
         "PROXMOX_TOKEN_SECRET": "your-token-secret"
       }
@@ -832,15 +863,21 @@ For any MCP-compatible IDE not listed here, the general configuration pattern is
 
 ```json
 {
-  "command": "npx" (or "node" or "proxmox-mcp-server"),
-  "args": ["-y", "@swartdraak/proxmox-mcp-server"] (if using npx),
+  "command": "npx",
+  "args": ["-y", "@swartdraak/proxmox-mcp-server"],
   "env": {
     "PROXMOX_HOST": "your-host",
+    "PROXMOX_USERNAME": "your-username",
     "PROXMOX_TOKEN_ID": "your-token-id",
     "PROXMOX_TOKEN_SECRET": "your-token-secret"
   }
 }
 ```
+
+**Notes:**
+- Use `"command": "proxmox-mcp-server"` for global installations
+- Use `"command": "node"` with `"args": ["/path/to/dist/index.js"]` for repository clones
+- If using npx, include the args array as shown above
 
 ## Troubleshooting
 
