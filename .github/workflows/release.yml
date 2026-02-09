@@ -1,0 +1,333 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+
+permissions:
+  contents: write
+
+jobs:
+  # Job 1: Determine version type and publishing strategy
+  version-check:
+    name: Analyze Version Type
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version_type: ${{ steps.version.outputs.version_type }}
+      should_publish_npm: ${{ steps.version.outputs.should_publish_npm }}
+      is_bugfix: ${{ steps.version.outputs.is_bugfix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Fetch all history to check commits
+      
+      - name: Analyze version and determine publishing strategy
+        id: version
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Parse version components
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          
+          echo "Detected version: $VERSION (Major: $MAJOR, Minor: $MINOR, Patch: $PATCH)"
+          
+          # Determine version type
+          if [ "$MINOR" = "0" ] && [ "$PATCH" = "0" ]; then
+            VERSION_TYPE="major"
+          elif [ "$PATCH" = "0" ]; then
+            VERSION_TYPE="minor"
+          else
+            VERSION_TYPE="patch"
+          fi
+          echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+          
+          # Check if this is a bugfix release
+          # Look for keywords in commit messages since the last tag
+          IS_BUGFIX="false"
+          
+          # Get previous tag (use tag name and dereference to commit before moving to parent)
+          PREV_TAG=$(git describe --abbrev=0 --tags ${GITHUB_REF#refs/tags/}^{commit}^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREV_TAG" ]; then
+            # Check commit messages between previous tag and current tag commit
+            COMMITS=$(git log ${PREV_TAG}..${GITHUB_REF#refs/tags/}^{commit} --pretty=format:"%s %b" | tr '[:upper:]' '[:lower:]')
+            
+            # Look for bug/fix keywords as whole words to avoid false positives like "prefix" or "debug"
+            if echo "$COMMITS" | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
+              IS_BUGFIX="true"
+            fi
+          fi
+          
+          # Check tag annotation for bug/fix keywords as whole words to avoid false positives
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/} | tr '[:upper:]' '[:lower:]')
+          if echo "$TAG_MESSAGE" | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
+            IS_BUGFIX="true"
+          fi
+          
+          echo "is_bugfix=$IS_BUGFIX" >> $GITHUB_OUTPUT
+          
+          # Determine if we should publish to npm
+          # Rules:
+          # - Always publish on major versions
+          # - Publish on minor versions only if it's a bugfix
+          # - Publish on patch versions only if it's a bugfix
+          SHOULD_PUBLISH="false"
+          
+          if [ "$VERSION_TYPE" = "major" ]; then
+            SHOULD_PUBLISH="true"
+            echo "✅ Major version - will publish to npm"
+          elif [ "$VERSION_TYPE" = "minor" ] && [ "$IS_BUGFIX" = "true" ]; then
+            SHOULD_PUBLISH="true"
+            echo "✅ Minor version with bugfix - will publish to npm"
+          elif [ "$VERSION_TYPE" = "minor" ] && [ "$IS_BUGFIX" = "false" ]; then
+            SHOULD_PUBLISH="false"
+            echo "❌ Minor version without bugfix - will NOT publish to npm"
+          elif [ "$VERSION_TYPE" = "patch" ] && [ "$IS_BUGFIX" = "true" ]; then
+            SHOULD_PUBLISH="true"
+            echo "✅ Patch version with bugfix - will publish to npm"
+          else
+            SHOULD_PUBLISH="false"
+            echo "❌ Will NOT publish to npm"
+          fi
+          
+          echo "should_publish_npm=$SHOULD_PUBLISH" >> $GITHUB_OUTPUT
+          
+          # Summary
+          echo "## Version Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type:** $VERSION_TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Is Bugfix:** $IS_BUGFIX" >> $GITHUB_STEP_SUMMARY
+          echo "- **Publish to npm:** $SHOULD_PUBLISH" >> $GITHUB_STEP_SUMMARY
+
+  # Job 2: Build for multiple platforms
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: version-check
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['18']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Verify build
+        shell: bash
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "Error: dist/index.js not found"
+            exit 1
+          fi
+          echo "✅ Build verification successful"
+      
+      - name: Package build artifacts
+        shell: bash
+        run: |
+          # Create platform-specific package name
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            PLATFORM="linux"
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            PLATFORM="windows"
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            PLATFORM="macos"
+          fi
+          
+          # Create archive with build artifacts and essential files
+          mkdir -p release-package
+          cp -r dist package.json package-lock.json README.md LICENSE CHANGELOG.md release-package/
+          
+          # Create platform-specific archive
+          cd release-package
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a -tzip ../proxmox-mcp-server-${{ needs.version-check.outputs.version }}-${PLATFORM}.zip .
+          else
+            tar -czf ../proxmox-mcp-server-${{ needs.version-check.outputs.version }}-${PLATFORM}.tar.gz .
+          fi
+          cd ..
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-${{ matrix.os }}
+          path: |
+            proxmox-mcp-server-*.tar.gz
+            proxmox-mcp-server-*.zip
+          retention-days: 7
+
+  # Job 3: Create GitHub Release
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [version-check, build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+      
+      - name: Prepare release artifacts
+        run: |
+          mkdir -p release-files
+          find artifacts -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec cp {} release-files/ \;
+          ls -lh release-files/
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION=${{ needs.version-check.outputs.version }}
+          
+          # Extract changelog entry for this version if it exists
+          CHANGELOG_ENTRY=""
+          if [ -f CHANGELOG.md ]; then
+            # Try to extract the section for this version
+            CHANGELOG_ENTRY=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' || echo "")
+          fi
+          
+          # Get commits since last tag
+          PREV_TAG=$(git describe --abbrev=0 --tags ${GITHUB_REF}^ 2>/dev/null || echo "")
+          COMMITS=""
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log ${PREV_TAG}..${GITHUB_REF} --pretty=format:"- %s (%h)" || echo "")
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --max-count=20 || echo "")
+          fi
+          
+          # Create release notes
+          cat > release_notes.md << 'EOF'
+          # Release ${{ needs.version-check.outputs.version }}
+          
+          **Version Type:** ${{ needs.version-check.outputs.version_type }}
+          **Is Bugfix:** ${{ needs.version-check.outputs.is_bugfix }}
+          **Published to npm:** ${{ needs.version-check.outputs.should_publish_npm }}
+          
+          ## Installation
+          
+          ### Via npm
+          ```bash
+          npm install -g @swartdraak/proxmox-mcp-server@${{ needs.version-check.outputs.version }}
+          ```
+          
+          ### Via npx (no installation)
+          ```bash
+          npx @swartdraak/proxmox-mcp-server@${{ needs.version-check.outputs.version }}
+          ```
+          
+          ### Platform-specific packages
+          Download the appropriate package for your platform from the assets below.
+          
+          ## Changes
+          
+          EOF
+          
+          # Add changelog if found
+          if [ -n "$CHANGELOG_ENTRY" ]; then
+            echo "$CHANGELOG_ENTRY" >> release_notes.md
+          fi
+          
+          # Add commit list
+          if [ -n "$COMMITS" ]; then
+            echo "" >> release_notes.md
+            echo "### Commits" >> release_notes.md
+            echo "$COMMITS" >> release_notes.md
+          fi
+          
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "" >> release_notes.md
+          if [ -n "$PREV_TAG" ]; then
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ needs.version-check.outputs.version }}" >> release_notes.md
+          else
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/tree/v${{ needs.version-check.outputs.version }}" >> release_notes.md
+          fi
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ needs.version-check.outputs.version }}
+          tag_name: v${{ needs.version-check.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: release-files/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job 4: Publish to npm (conditional)
+  npm-publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: [version-check, build, github-release]
+    if: needs.version-check.outputs.should_publish_npm == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: npm publish summary
+        run: |
+          echo "## ✅ Successfully published to npm" >> $GITHUB_STEP_SUMMARY
+          echo "Package: @swartdraak/proxmox-mcp-server@${{ needs.version-check.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View on npm: https://www.npmjs.com/package/@swartdraak/proxmox-mcp-server/v/${{ needs.version-check.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+
+  # Job 5: Skip npm publish notification
+  npm-skip:
+    name: npm Publish Skipped
+    runs-on: ubuntu-latest
+    needs: [version-check, github-release]
+    if: needs.version-check.outputs.should_publish_npm != 'true'
+    steps:
+      - name: npm skip summary
+        run: |
+          echo "## ℹ️ npm publish skipped" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:**" >> $GITHUB_STEP_SUMMARY
+          echo "- This is a ${{ needs.version-check.outputs.version_type }} version" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.version-check.outputs.version_type }}" != "major" ]; then
+            echo "- It is not marked as a bugfix (is_bugfix=${{ needs.version-check.outputs.is_bugfix }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Publishing Rules:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Major versions: Always publish to npm" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️ Minor versions: Publish only if bugfix" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️ Patch versions: Publish only if bugfix" >> $GITHUB_STEP_SUMMARY
