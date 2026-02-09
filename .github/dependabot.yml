@@ -33,10 +33,7 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Ignore major version updates for now (require manual review)
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+    # Major version updates will create separate PRs for manual review
 
   # Enable GitHub Actions dependency updates
   - package-ecosystem: "github-actions"
@@ -44,6 +41,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "00:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     reviewers:
       - "Swartdraak"

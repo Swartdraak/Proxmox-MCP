@@ -18,7 +18,8 @@ The project uses GitHub Dependabot for automated dependency updates. Dependabot 
 
 #### Configuration Details
 
-- **npm Dependencies**: Groups development and production dependencies separately
+- **npm Dependencies**: Groups development and production dependencies separately (minor and patch updates only)
+- **Major Version Updates**: Create separate PRs for careful manual review
 - **Pull Request Limits**: 
   - Up to 10 npm dependency PRs at a time
   - Up to 5 GitHub Actions PRs at a time
