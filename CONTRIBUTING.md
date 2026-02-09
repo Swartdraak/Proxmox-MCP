@@ -168,7 +168,7 @@ Include:
 - Use Zod schemas for validation
 - Never log sensitive data
 - Use rate limiting for public endpoints
-- Keep dependencies updated
+- Keep dependencies updated (see [Dependency Management Guide](docs/dependency-management.md))
 - Follow OWASP best practices
 
 ## Release Process

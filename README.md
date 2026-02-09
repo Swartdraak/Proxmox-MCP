@@ -271,6 +271,7 @@ npm run test:fuzz
 - [Troubleshooting Guide](docs/troubleshooting.md)
 - [Cross-Platform Development Guide](docs/cross-platform.md)
 - [IDE Integration Guide](docs/ide-integration.md)
+- [Dependency Management Guide](docs/dependency-management.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 
 ## 🤝 Contributing
