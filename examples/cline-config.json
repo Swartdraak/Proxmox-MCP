@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "proxmox": {
+      "command": "npx",
+      "args": ["-y", "@swartdraak/proxmox-mcp-server"],
+      "env": {
+        "PROXMOX_HOST": "proxmox.example.com",
+        "PROXMOX_PORT": "8006",
+        "PROXMOX_USERNAME": "root",
+        "PROXMOX_TOKEN_ID": "your-token-id",
+        "PROXMOX_TOKEN_SECRET": "your-token-secret",
+        "PROXMOX_REALM": "pam",
+        "PROXMOX_VERIFY_SSL": "true",
+        "PROXMOX_TIMEOUT": "30000"
+      }
+    }
+  }
+}
