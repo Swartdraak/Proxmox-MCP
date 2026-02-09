@@ -81,10 +81,10 @@ For releases that only add features without bug fixes:
 
 ```bash
 # Create an annotated tag
-git tag -a v1.1.0 -m "Minor release v1.1.0 - Add new VM cloning feature"
+git tag -a v1.2.0 -m "Minor release v1.2.0 - Add new VM cloning feature"
 
 # Push the tag
-git push origin v1.1.0
+git push origin v1.2.0
 ```
 
 #### For Major Releases

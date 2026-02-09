@@ -47,8 +47,8 @@ Feature-only release:
 ```bash
 git add .
 git commit -m "feat: add VM snapshot functionality"
-git tag -a v1.1.0 -m "Minor release v1.1.0 - Add VM snapshots"
-git push origin main v1.1.0
+git tag -a v1.2.0 -m "Minor release v1.2.0 - Add VM snapshots"
+git push origin main v1.2.0
 ```
 
 **Result**: ✅ GitHub Release + ❌ npm NOT Published

@@ -34,13 +34,13 @@ test_version() {
     # Check if this is a bugfix release
     IS_BUGFIX="false"
     
-    # Check commits for bug/fix keywords (case-insensitive)
-    if echo "$COMMITS" | tr '[:upper:]' '[:lower:]' | grep -qE "(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)"; then
+    # Check commits for bug/fix keywords (case-insensitive) with word boundaries
+    if echo "$COMMITS" | tr '[:upper:]' '[:lower:]' | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
         IS_BUGFIX="true"
     fi
     
-    # Check tag message for bug/fix keywords (case-insensitive)
-    if echo "$TAG_MESSAGE" | tr '[:upper:]' '[:lower:]' | grep -qE "(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)"; then
+    # Check tag message for bug/fix keywords (case-insensitive) with word boundaries
+    if echo "$TAG_MESSAGE" | tr '[:upper:]' '[:lower:]' | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
         IS_BUGFIX="true"
     fi
     

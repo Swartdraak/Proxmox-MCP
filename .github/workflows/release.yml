@@ -52,22 +52,22 @@ jobs:
           # Look for keywords in commit messages since the last tag
           IS_BUGFIX="false"
           
-          # Get previous tag
-          PREV_TAG=$(git describe --abbrev=0 --tags ${GITHUB_REF}^ 2>/dev/null || echo "")
+          # Get previous tag (use tag name and dereference to commit before moving to parent)
+          PREV_TAG=$(git describe --abbrev=0 --tags ${GITHUB_REF#refs/tags/}^{commit}^ 2>/dev/null || echo "")
           
           if [ -n "$PREV_TAG" ]; then
-            # Check commit messages between previous tag and current tag
-            COMMITS=$(git log ${PREV_TAG}..${GITHUB_REF} --pretty=format:"%s %b" | tr '[:upper:]' '[:lower:]')
+            # Check commit messages between previous tag and current tag commit
+            COMMITS=$(git log ${PREV_TAG}..${GITHUB_REF#refs/tags/}^{commit} --pretty=format:"%s %b" | tr '[:upper:]' '[:lower:]')
             
-            # Look for bug/fix keywords
-            if echo "$COMMITS" | grep -qE "(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)"; then
+            # Look for bug/fix keywords as whole words to avoid false positives like "prefix" or "debug"
+            if echo "$COMMITS" | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
               IS_BUGFIX="true"
             fi
           fi
           
-          # Check tag annotation for bug/fix keywords
+          # Check tag annotation for bug/fix keywords as whole words to avoid false positives
           TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/} | tr '[:upper:]' '[:lower:]')
-          if echo "$TAG_MESSAGE" | grep -qE "(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)"; then
+          if echo "$TAG_MESSAGE" | grep -qE "\b(fix|bug|bugfix|hotfix|patch|repair|correct|resolve)(es|ed|ing|s)?\b"; then
             IS_BUGFIX="true"
           fi
           
@@ -259,7 +259,11 @@ jobs:
           echo "" >> release_notes.md
           echo "---" >> release_notes.md
           echo "" >> release_notes.md
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ needs.version-check.outputs.version }}" >> release_notes.md
+          if [ -n "$PREV_TAG" ]; then
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ needs.version-check.outputs.version }}" >> release_notes.md
+          else
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/tree/v${{ needs.version-check.outputs.version }}" >> release_notes.md
+          fi
       
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -268,7 +272,7 @@ jobs:
           tag_name: v${{ needs.version-check.outputs.version }}
           body_path: release_notes.md
           draft: false
-          prerelease: ${{ needs.version-check.outputs.version_type == 'patch' && needs.version-check.outputs.is_bugfix == 'false' }}
+          prerelease: false
           files: release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -317,9 +321,10 @@ jobs:
       - name: npm skip summary
         run: |
           echo "## ℹ️ npm publish skipped" >> $GITHUB_STEP_SUMMARY
-          echo "**Reason:** This is a ${{ needs.version-check.outputs.version_type }} version" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:**" >> $GITHUB_STEP_SUMMARY
+          echo "- This is a ${{ needs.version-check.outputs.version_type }} version" >> $GITHUB_STEP_SUMMARY
           if [ "${{ needs.version-check.outputs.version_type }}" != "major" ]; then
-            echo "and is not marked as a bugfix (is_bugfix=${{ needs.version-check.outputs.is_bugfix }})" >> $GITHUB_STEP_SUMMARY
+            echo "- It is not marked as a bugfix (is_bugfix=${{ needs.version-check.outputs.is_bugfix }})" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Publishing Rules:**" >> $GITHUB_STEP_SUMMARY
