@@ -58,7 +58,7 @@
   },
   "homepage": "https://github.com/Swartdraak/Proxmox-MCP#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.18.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
@@ -67,6 +67,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/node": "^22.10.5",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "@typescript-eslint/parser": "^8.20.0",
