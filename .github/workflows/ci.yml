@@ -84,7 +84,7 @@ jobs:
           echo "Build artifacts verified successfully"
       
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'ubuntu-latest'
         with:
           name: dist
