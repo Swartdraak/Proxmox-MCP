@@ -1,0 +1,199 @@
+# Onyx project contract - Swartdraak/Proxmox-MCP
+#
+# Authoritative, executable contract. Every command below was verified to pass
+# in an isolated Docker audit workspace on base SHA
+# 4535b0ebbaeebb32d9221178b16c3f70a972cdc3 (branch main). See
+# ../baseline.json for pass/fail evidence and ../baseline-logs/ for raw output.
+#
+# Do NOT store credentials or secrets here. Proxmox credentials are supplied at
+# runtime via environment variables (see environment below).
+
+project:
+  name: "@swartdraak/proxmox-mcp-server"
+  version: "1.0.0"
+  description: >
+    MCP (Model Context Protocol) server for Proxmox VE management via AI
+    assistants. Exposes read-only and management tools (nodes, VMs, LXC
+    containers, storage) over a stdio transport.
+
+repository:
+  provider: github
+  owner_repo: Swartdraak/Proxmox-MCP
+  immutable_repo_id: 1152653165
+  canonical_url: https://github.com/Swartdraak/Proxmox-MCP
+  default_branch: main
+
+language: typescript
+module_system: esm
+package_manager: npm
+
+runtime:
+  # package.json declares node >=18.0.0. CI pins node-version '18'. The audit
+  # workspace ran node v20.20.2 (delta noted; install/lint/build/smoke all pass).
+  node: ">=18.0.0"
+  ci_node: "18"
+  audit_node: "20.20.2"
+
+toolchain:
+  # No external toolchain needed beyond Node.js + npm. TypeScript and the MCP
+  # SDK are resolved from the npm registry via package-lock.json.
+
+bootstrap:
+  description: >
+    Install locked dependencies. Note that the prepare script auto-runs
+    npm run build on install.
+  commands:
+    - npm ci
+
+build:
+  description: >
+    Compile TypeScript (src to dist). Strict compiler options.
+  commands:
+    - npm run build
+  artifacts:
+    - dist/index.js
+    - dist/index.d.ts
+
+lint:
+  description: >
+    TypeScript type check (tsc --noEmit). This is the repo lint gate.
+  commands:
+    - npm run lint
+
+test:
+  description: >
+    The package.json test script is a placeholder that echoes "No tests";
+    there is no unit-test framework configured. Recorded as passed (no-op) so
+    the gate is honest about its empty state. A release-logic smoke script is
+    also shipped (see integrations.release_logic_smoke).
+  commands:
+    - npm test
+
+unit:
+  description: >
+    Not configured. No test framework or test files exist in-repo.
+  commands: []
+
+integration:
+  description: >
+    No automated integration suite. The MCP server talks to a live Proxmox VE
+    over HTTPS; exercising the tools requires a real or synthetic Proxmox
+    instance with credentials, which is out of scope for an isolated
+    onboarding audit. Recorded as skipped (not failed) - see
+    skipped_integrations.
+  commands: []
+
+security:
+  description: >
+    npm audit at the high threshold. The dependency tree currently has 12
+    vulnerabilities (1 low, 3 moderate, 8 high), so this gate FAILS (exit 1).
+    CI runs it with continue-on-error true, masking the failure. Recorded
+    honestly as failed / pre-existing below.
+  commands:
+    - npm audit --audit-level=high
+
+# Runtime / health
+runtime_smoke:
+  description: >
+    Boot the built server on stdio and confirm it answers an MCP initialize
+    request. Proxmox credentials are NOT required to boot: config validation
+    (PROXMOX_HOST / PROXMOX_USERNAME / auth) is deferred until the first tool
+    call, so the smoke test runs clean with no live Proxmox backend.
+  verified_command: node dist/index.js
+  smoke_note: Send an MCP initialize request over stdio.
+  expected: "jsonrpc response with serverInfo.name == 'proxmox-mcp-server'"
+  # Audit evidence: server printed "Proxmox MCP Server running on stdio" and
+  # returned protocolVersion 2024-11-05, serverInfo version 1.0.0.
+
+environment:
+  # All Proxmox access is via env vars (see .env.example). None are required to
+  # boot or type-check; they are required to invoke any tool against a host.
+  vars:
+    - name: PROXMOX_HOST
+      required_for: tools
+      notes: Proxmox node hostname
+    - name: PROXMOX_PORT
+      required_for: tools
+      default: "8006"
+    - name: PROXMOX_USERNAME
+      required_for: tools
+    - name: PROXMOX_PASSWORD
+      required_for: tools
+      notes: Method 1 (password auth); do NOT commit
+    - name: PROXMOX_TOKEN_ID
+      required_for: tools
+      notes: Method 2 (API token, recommended)
+    - name: PROXMOX_TOKEN_SECRET
+      required_for: tools
+      notes: Method 2 (API token, recommended); do NOT commit
+    - name: PROXMOX_REALM
+      required_for: tools
+      default: pam
+    - name: PROXMOX_VERIFY_SSL
+      required_for: tools
+      default: "true"
+    - name: PROXMOX_TIMEOUT
+      required_for: tools
+      default: "30000"
+
+ci:
+  provider: github-actions
+  workflows:
+    - name: CI Pipeline
+      path: .github/workflows/ci.yml
+      jobs: [lint, security, build]
+      notes: >
+        build job is a 3-OS matrix (ubuntu / windows / macos) on node 18;
+        security job runs npm audit with continue-on-error true.
+    - name: Release
+      path: .github/workflows/release.yml
+      notes: Tag-triggered npm publish; not part of the onboarding baseline.
+
+autonomy:
+  gates:
+    - lint
+    - build
+    - runtime_smoke
+  # unit/integration/security are not gating gates: unit + integration are
+  # unconfigured, security currently fails (pre-existing dependency vulns).
+
+deployment:
+  # Prohibited for production / enterprise. Isolated testing / semi-prod only,
+  # with synthetic Proxmox data and scoped credentials.
+  authorized: [isolated-testing, semi-production-validation]
+  prohibited: [production, enterprise]
+  method: >
+    The MCP server is launched as a child stdio process by an MCP client
+    (Claude, Cursor, Cline, Zed, VS Code, etc.) per the examples/ configs.
+    There is no standalone daemon or service to deploy.
+  rollback: Remove the MCP client config entry or uninstall the npm package.
+
+skipped_integrations:
+  - integration: live Proxmox VE
+    reason: >
+      Requires a real or synthetic Proxmox host plus credentials. Out of scope
+      for an isolated onboarding audit with no Proxmox instance available in
+      the workspace. Tool invocations are therefore not exercised; only
+      boot / initialize is verified.
+  - integration: unit tests
+    reason: None configured in-repo (test script is a no-op placeholder).
+  - integration: Docker / compose
+    reason: No Dockerfile or docker-compose in the repository; nothing to build.
+
+pre_existing_faults:
+  - id: P1
+    severity: high
+    area: dependencies
+    detail: >
+      npm audit at the high threshold reports 12 vulnerabilities (1 low, 3
+      moderate, 8 high), including ip-address (XSS / SSRF trust-boundary) and
+      path-to-regexp (ReDoS / DoS). The audit gate exits non-zero, but the CI
+      security job uses continue-on-error true, so the failure is masked.
+    status: open
+  - id: P2
+    severity: low
+    area: test-coverage
+    detail: >
+      npm test is a placeholder that prints "No tests". There is no unit or
+      integration test coverage for the MCP tool implementations.
+    status: open
