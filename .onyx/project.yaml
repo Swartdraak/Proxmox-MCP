@@ -2,7 +2,7 @@
 #
 # Authoritative, executable contract. Every command below was verified to pass
 # in an isolated Docker audit workspace on base SHA
-# 4535b0ebbaeebb32d9221178b16c3f70a972cdc3 (branch main). See
+# 13b32d2c24600b6d7623bea853713f373a01614b (branch main). See
 # ../baseline.json for pass/fail evidence and ../baseline-logs/ for raw output.
 #
 # Do NOT store credentials or secrets here. Proxmox credentials are supplied at
@@ -62,12 +62,22 @@ lint:
 
 test:
   description: >
-    The package.json test script is a placeholder that echoes "No tests";
-    there is no unit-test framework configured. Recorded as passed (no-op) so
-    the gate is honest about its empty state. A release-logic smoke script is
-    also shipped (see integrations.release_logic_smoke).
+    Regression guard for issue #29 (lockfile security pins). The package.json
+    test script is a placeholder that echoes "No tests"; the real regression net
+    lives in tests/ and is run directly with node's built-in test runner.
   commands:
     - npm test
+  regression_suite:
+    description: >
+      Node built-in test runner over tests/*.test.mjs. Verifies the checked-in
+      package-lock.json still pins every security-audited package (fast-uri,
+      hono, @hono/node-server, ip-address, path-to-regexp, form-data,
+      express-rate-limit, axios, follow-redirects, qs, body-parser, ajv) at or
+      above its advisory fixed-in version, that package.json remains
+      lockfile-only unchanged, and that npm audit --audit-level=high exits 0.
+    commands:
+      - node --test tests/
+    verified: 4/4 pass on the issue #29 remediation branch head
 
 unit:
   description: >
@@ -85,10 +95,11 @@ integration:
 
 security:
   description: >
-    npm audit at the high threshold. The dependency tree currently has 12
-    vulnerabilities (1 low, 3 moderate, 8 high), so this gate FAILS (exit 1).
-    CI runs it with continue-on-error true, masking the failure. Recorded
-    honestly as failed / pre-existing below.
+    npm audit at the high threshold. After the issue #29 lockfile-only
+    remediation (npm audit fix --package-lock-only), the dependency tree
+    reports 0 vulnerabilities and this gate PASSES (exit 0). CI still runs it
+    with continue-on-error true (tracked as issue #30 — remove that masking
+    once the lockfile baseline is clean on main).
   commands:
     - npm audit --audit-level=high
 
@@ -153,9 +164,10 @@ autonomy:
   gates:
     - lint
     - build
+    - security
     - runtime_smoke
-  # unit/integration/security are not gating gates: unit + integration are
-  # unconfigured, security currently fails (pre-existing dependency vulns).
+  # unit + integration are unconfigured (not gating); security now gates after
+  # the issue #29 lockfile refresh (npm audit --audit-level=high exits 0).
 
 deployment:
   # Prohibited for production / enterprise. Isolated testing / semi-prod only,
@@ -176,7 +188,11 @@ skipped_integrations:
       the workspace. Tool invocations are therefore not exercised; only
       boot / initialize is verified.
   - integration: unit tests
-    reason: None configured in-repo (test script is a no-op placeholder).
+    reason: >
+      No general-purpose test framework is configured (package.json test
+      script is a no-op placeholder). A lockfile-security regression suite
+      exists under tests/ (node --test tests/, 4 tests) guarding issue #29,
+      but there is still no coverage for the MCP tool implementations.
   - integration: Docker / compose
     reason: No Dockerfile or docker-compose in the repository; nothing to build.
 
@@ -185,11 +201,15 @@ pre_existing_faults:
     severity: high
     area: dependencies
     detail: >
-      npm audit at the high threshold reports 12 vulnerabilities (1 low, 3
-      moderate, 8 high), including ip-address (XSS / SSRF trust-boundary) and
-      path-to-regexp (ReDoS / DoS). The audit gate exits non-zero, but the CI
-      security job uses continue-on-error true, so the failure is masked.
-    status: open
+      RESOLVED by issue #29: the lockfile-only remediation
+      (npm audit fix --package-lock-only) raised every audited transitive
+      (fast-uri, hono, @hono/node-server, ip-address, path-to-regexp,
+      form-data, express-rate-limit, axios, follow-redirects, qs, body-parser,
+      ajv) to its advisory fixed-in version. npm audit --audit-level=high now
+      exits 0 with 0 vulnerabilities; npm ci / build / lint / stdio smoke are
+      all green. The CI 'security' job still masks with continue-on-error
+      true — tracked as issue #30 (sequenced after this PR lands).
+    status: resolved
   - id: P2
     severity: low
     area: test-coverage
