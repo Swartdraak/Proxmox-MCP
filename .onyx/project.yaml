@@ -63,28 +63,38 @@ lint:
 
 test:
   description: >
-    Regression guard for issue #29 (lockfile security pins). The package.json
-    test script is a placeholder that echoes "No tests"; the real regression net
-    lives in tests/ and is run directly with node's built-in test runner.
+    npm test runs the in-repo regression suite via node's built-in test runner
+    (node --test tests/): the lockfile security pins (issue #29) and the MCP
+    server behavior (issue #31) — config validation, the stdio initialize
+    handshake, and tool listing/registration. The stdio tests spawn the built
+    server (dist/index.js); npm ci's prepare script builds it.
   commands:
     - npm test
   regression_suite:
     description: >
-      Node built-in test runner over tests/*.test.mjs. Verifies the checked-in
-      package-lock.json still pins every security-audited package (fast-uri,
-      hono, @hono/node-server, ip-address, path-to-regexp, form-data,
-      express-rate-limit, axios, follow-redirects, qs, body-parser,
+      Node built-in test runner over tests/*.test.mjs. lockfile-security.test.mjs
+      verifies the checked-in package-lock.json still pins every security-audited
+      package (fast-uri, hono, @hono/node-server, ip-address, path-to-regexp,
+      form-data, express-rate-limit, axios, follow-redirects, qs, body-parser,
       ajv) at or above its advisory fixed-in version, that package.json carries
       no #29 remediation change (Dependabot-owned spec bumps stay as-is), and
-      that npm audit --audit-level=high exits 0.
+      that npm audit --audit-level=high exits 0. mcp-server.test.mjs verifies
+      (issue #31) config validation errors for missing/incomplete env
+      credentials, the MCP initialize handshake (protocolVersion 2024-11-05,
+      serverInfo.name proxmox-mcp-server), tools/list returning exactly the 19
+      shipped Proxmox tools, and unknown-tool handling.
     commands:
       - node --test tests/
-    verified: 4/4 pass on the issue #29 remediation head re-based onto main 286c04c
+    verified: 9/9 pass (4 lockfile + 5 MCP server) on the issue #31 head from main 3b23d50
 
 unit:
   description: >
-    Not configured. No test framework or test files exist in-repo.
-  commands: []
+    Covered by the node:test suite under tests/ (see test above): the MCP
+    server behavior tests (config validation, initialize handshake, tool
+    listing) are unit/smoke tests over the built stdio server. No additional
+    framework is configured.
+  commands:
+    - npm test
 
 integration:
   description: >
@@ -157,7 +167,8 @@ ci:
       jobs: [lint, security, build]
       notes: >
         build job is a 3-OS matrix (ubuntu / windows / macos) on node 18;
-        security job runs npm audit with continue-on-error true.
+        security job runs npm audit; lint job runs the type check AND
+        `npm test` (issue #31) so a failing suite blocks merge.
     - name: Release
       path: .github/workflows/release.yml
       notes: Tag-triggered npm publish; not part of the onboarding baseline.
@@ -165,11 +176,13 @@ ci:
 autonomy:
   gates:
     - lint
+    - test
     - build
     - security
     - runtime_smoke
-  # unit + integration are unconfigured (not gating); security now gates after
-  # the issue #29 lockfile refresh (npm audit --audit-level=high exits 0).
+  # unit is covered by the node:test suite (npm test); integration remains
+  # unconfigured (not gating); security now gates after the issue #29
+  # lockfile refresh (npm audit --audit-level=high exits 0).
 
 deployment:
   # Prohibited for production / enterprise. Isolated testing / semi-prod only,
@@ -191,10 +204,11 @@ skipped_integrations:
       boot / initialize is verified.
   - integration: unit tests
     reason: >
-      No general-purpose test framework is configured (package.json test
-      script is a no-op placeholder). A lockfile-security regression suite
-      exists under tests/ (node --test tests/, 4 tests) guarding issue #29,
-      but there is still no coverage for the MCP tool implementations.
+      RESOLVED by issue #31: npm test now runs the node:test suite
+      (tests/*.test.mjs) covering config validation, the MCP initialize
+      handshake and the full 19-tool listing. Coverage for the Proxmox tool
+      IMPLEMENTATIONS (actual API calls against a host) remains out of scope —
+      see the live-Proxmox entry.
   - integration: Docker / compose
     reason: No Dockerfile or docker-compose in the repository; nothing to build.
 
@@ -216,6 +230,9 @@ pre_existing_faults:
     severity: low
     area: test-coverage
     detail: >
-      npm test is a placeholder that prints "No tests". There is no unit or
-      integration test coverage for the MCP tool implementations.
-    status: open
+      RESOLVED by issue #31: npm test was a placeholder that printed
+      "No tests". It now runs the node:test suite (tests/*.test.mjs):
+      4 lockfile-security tests (issue #29 guard) + 5 MCP server behavior
+      tests (config validation, initialize handshake, tool listing,
+      unknown-tool handling). CI lint job runs the suite and blocks merge.
+    status: resolved
