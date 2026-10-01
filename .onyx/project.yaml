@@ -2,9 +2,10 @@
 #
 # Authoritative, executable contract. Every command below was verified to pass
 # in an isolated Docker audit workspace on base SHA
-# 286c04c0fe11205ace9d64c8a0c1fddce121d40d (branch main; post-Dependabot-#25/#22,
-# issue #29 remediation head re-based onto this main in task t_5fbae461). See
-# ../baseline.json for pass/fail evidence and ../baseline-logs/ for raw output.
+# 02d71ebde1e477027879c74b18a602309cf16cf8 (branch main; live main at audit time)
+# and re-verified at PR #41 head df6f54ab39733dd8cb5a2ca65d12c04399a55e02
+# (dependabot/npm_and_yarn/types/node-26.6.2) in task t_ed537024. See
+# ../baseline.json for pass/fail evidence and ../audit-logs/ for raw output.
 #
 # Do NOT store credentials or secrets here. Proxmox credentials are supplied at
 # runtime via environment variables (see environment below).
@@ -85,7 +86,7 @@ test:
       shipped Proxmox tools, and unknown-tool handling.
     commands:
       - node --test tests/
-    verified: 9/9 pass (4 lockfile + 5 MCP server) on the issue #31 head from main 3b23d50
+    verified: 10/10 pass (4 lockfile + 6 MCP server) at PR #41 head df6f54ab, task t_ed537024
 
 unit:
   description: >
