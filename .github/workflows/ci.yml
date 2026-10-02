@@ -27,6 +27,9 @@ jobs:
       
       - name: Run TypeScript type check
         run: npm run lint
+      
+      - name: Run tests
+        run: npm test
 
   security:
     name: Security Audit
@@ -45,7 +48,6 @@ jobs:
       
       - name: Run npm audit
         run: npm audit --audit-level=high
-        continue-on-error: true
       
       - name: Run dependency review
         uses: actions/dependency-review-action@v4
@@ -84,7 +86,7 @@ jobs:
           echo "Build artifacts verified successfully"
       
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'ubuntu-latest'
         with:
           name: dist

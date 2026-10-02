@@ -2,8 +2,10 @@
 #
 # Authoritative, executable contract. Every command below was verified to pass
 # in an isolated Docker audit workspace on base SHA
-# 4535b0ebbaeebb32d9221178b16c3f70a972cdc3 (branch main). See
-# ../baseline.json for pass/fail evidence and ../baseline-logs/ for raw output.
+# 02d71ebde1e477027879c74b18a602309cf16cf8 (branch main; live main at audit time)
+# and re-verified at PR #41 head df6f54ab39733dd8cb5a2ca65d12c04399a55e02
+# (dependabot/npm_and_yarn/types/node-26.6.2) in task t_ed537024. See
+# ../baseline.json for pass/fail evidence and ../audit-logs/ for raw output.
 #
 # Do NOT store credentials or secrets here. Proxmox credentials are supplied at
 # runtime via environment variables (see environment below).
@@ -62,17 +64,38 @@ lint:
 
 test:
   description: >
-    The package.json test script is a placeholder that echoes "No tests";
-    there is no unit-test framework configured. Recorded as passed (no-op) so
-    the gate is honest about its empty state. A release-logic smoke script is
-    also shipped (see integrations.release_logic_smoke).
+    npm test runs the in-repo regression suite via node's built-in test runner
+    (node --test tests/): the lockfile security pins (issue #29) and the MCP
+    server behavior (issue #31) — config validation, the stdio initialize
+    handshake, and tool listing/registration. The stdio tests spawn the built
+    server (dist/index.js); npm ci's prepare script builds it.
   commands:
     - npm test
+  regression_suite:
+    description: >
+      Node built-in test runner over tests/*.test.mjs. lockfile-security.test.mjs
+      verifies the checked-in package-lock.json still pins every security-audited
+      package (fast-uri, hono, @hono/node-server, ip-address, path-to-regexp,
+      form-data, express-rate-limit, axios, follow-redirects, qs, body-parser,
+      ajv) at or above its advisory fixed-in version, that package.json carries
+      no #29 remediation change (Dependabot-owned spec bumps stay as-is), and
+      that npm audit --audit-level=high exits 0. mcp-server.test.mjs verifies
+      (issue #31) config validation errors for missing/incomplete env
+      credentials, the MCP initialize handshake (protocolVersion 2024-11-05,
+      serverInfo.name proxmox-mcp-server), tools/list returning exactly the 19
+      shipped Proxmox tools, and unknown-tool handling.
+    commands:
+      - node --test tests/
+    verified: 10/10 pass (4 lockfile + 6 MCP server) at PR #41 head df6f54ab, task t_ed537024
 
 unit:
   description: >
-    Not configured. No test framework or test files exist in-repo.
-  commands: []
+    Covered by the node:test suite under tests/ (see test above): the MCP
+    server behavior tests (config validation, initialize handshake, tool
+    listing) are unit/smoke tests over the built stdio server. No additional
+    framework is configured.
+  commands:
+    - npm test
 
 integration:
   description: >
@@ -85,10 +108,11 @@ integration:
 
 security:
   description: >
-    npm audit at the high threshold. The dependency tree currently has 12
-    vulnerabilities (1 low, 3 moderate, 8 high), so this gate FAILS (exit 1).
-    CI runs it with continue-on-error true, masking the failure. Recorded
-    honestly as failed / pre-existing below.
+    npm audit at the high threshold. After the issue #29 lockfile-only
+    remediation (npm audit fix --package-lock-only), the dependency tree
+    reports 0 vulnerabilities and this gate PASSES (exit 0). CI still runs it
+    with continue-on-error true (tracked as issue #30 — remove that masking
+    once the lockfile baseline is clean on main).
   commands:
     - npm audit --audit-level=high
 
@@ -144,7 +168,8 @@ ci:
       jobs: [lint, security, build]
       notes: >
         build job is a 3-OS matrix (ubuntu / windows / macos) on node 18;
-        security job runs npm audit with continue-on-error true.
+        security job runs npm audit; lint job runs the type check AND
+        `npm test` (issue #31) so a failing suite blocks merge.
     - name: Release
       path: .github/workflows/release.yml
       notes: Tag-triggered npm publish; not part of the onboarding baseline.
@@ -152,10 +177,13 @@ ci:
 autonomy:
   gates:
     - lint
+    - test
     - build
+    - security
     - runtime_smoke
-  # unit/integration/security are not gating gates: unit + integration are
-  # unconfigured, security currently fails (pre-existing dependency vulns).
+  # unit is covered by the node:test suite (npm test); integration remains
+  # unconfigured (not gating); security now gates after the issue #29
+  # lockfile refresh (npm audit --audit-level=high exits 0).
 
 deployment:
   # Prohibited for production / enterprise. Isolated testing / semi-prod only,
@@ -176,7 +204,12 @@ skipped_integrations:
       the workspace. Tool invocations are therefore not exercised; only
       boot / initialize is verified.
   - integration: unit tests
-    reason: None configured in-repo (test script is a no-op placeholder).
+    reason: >
+      RESOLVED by issue #31: npm test now runs the node:test suite
+      (tests/*.test.mjs) covering config validation, the MCP initialize
+      handshake and the full 19-tool listing. Coverage for the Proxmox tool
+      IMPLEMENTATIONS (actual API calls against a host) remains out of scope —
+      see the live-Proxmox entry.
   - integration: Docker / compose
     reason: No Dockerfile or docker-compose in the repository; nothing to build.
 
@@ -185,15 +218,22 @@ pre_existing_faults:
     severity: high
     area: dependencies
     detail: >
-      npm audit at the high threshold reports 12 vulnerabilities (1 low, 3
-      moderate, 8 high), including ip-address (XSS / SSRF trust-boundary) and
-      path-to-regexp (ReDoS / DoS). The audit gate exits non-zero, but the CI
-      security job uses continue-on-error true, so the failure is masked.
-    status: open
+      RESOLVED by issue #29: the lockfile-only remediation
+      (npm audit fix --package-lock-only) raised every audited transitive
+      (fast-uri, hono, @hono/node-server, ip-address, path-to-regexp,
+      form-data, express-rate-limit, axios, follow-redirects, qs, body-parser,
+      ajv) to its advisory fixed-in version. npm audit --audit-level=high now
+      exits 0 with 0 vulnerabilities; npm ci / build / lint / stdio smoke are
+      all green. The CI 'security' job still masks with continue-on-error
+      true — tracked as issue #30 (sequenced after this PR lands).
+    status: resolved
   - id: P2
     severity: low
     area: test-coverage
     detail: >
-      npm test is a placeholder that prints "No tests". There is no unit or
-      integration test coverage for the MCP tool implementations.
-    status: open
+      RESOLVED by issue #31: npm test was a placeholder that printed
+      "No tests". It now runs the node:test suite (tests/*.test.mjs):
+      4 lockfile-security tests (issue #29 guard) + 5 MCP server behavior
+      tests (config validation, initialize handshake, tool listing,
+      unknown-tool handling). CI lint job runs the suite and blocks merge.
+    status: resolved
