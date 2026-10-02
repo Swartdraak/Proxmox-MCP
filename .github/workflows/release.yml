@@ -186,7 +186,7 @@ jobs:
           fetch-depth: 0
       
       - name: Download all artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
       
@@ -266,7 +266,7 @@ jobs:
           fi
       
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: v${{ needs.version-check.outputs.version }}
           tag_name: v${{ needs.version-check.outputs.version }}
