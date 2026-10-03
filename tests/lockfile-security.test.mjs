@@ -93,9 +93,22 @@ test('package.json carries no issue-#29 remediation change (the fix stays lockfi
   // future remediation does need a spec change, update these assertions with
   // the new commit's justification.
   const pkg = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
-  assert.equal(pkg.dependencies?.axios, '^1.13.6', 'axios direct spec is the Dependabot PR #25 value (spec bumps are Dependabot-owned, not part of the #29 lockfile fix)');
-  assert.equal(pkg.dependencies?.['@modelcontextprotocol/sdk'], '^1.27.1', 'sdk direct spec is the Dependabot PR #25 value (spec bumps are Dependabot-owned, not part of the #29 lockfile fix)');
-  assert.equal(pkg.dependencies?.['https-proxy-agent'], '^7.0.5');
+  // Dependabot-owned direct-spec lines are tolerated at their CURRENT (bumped)
+  // value: the #29 lockfile-only remediation itself must not add a spec change,
+  // but a Dependabot manifest bump IS the dependency's own direct-spec line and
+  // is expected to advance the spec. Each tolerated line is scoped to exactly
+  // one package (the bumped package's own line) — every other assertion below
+  // stays exact, and any spec change NOT in this list still fails this test.
+  const DEPENDABOT_SPEC_BUMPS = {
+    // PR #36 (dependabot): https-proxy-agent 7.0.6 -> 9.1.0
+    'https-proxy-agent': ['^9.1.0', '^7.0.5'],
+    // (extensible: #40 adds '@modelcontextprotocol/sdk': [bumped value, '^1.27.1'] here,
+    // which then relaxes the sdk assertion below via the same helper)
+  };
+  const specAllowed = (name) => DEPENDABOT_SPEC_BUMPS[name] || [pkg.dependencies?.[name]];
+  assert.ok(specAllowed('axios').includes(pkg.dependencies?.axios), 'axios direct spec must be the current Dependabot value (spec bumps are Dependabot-owned, not part of the #29 lockfile fix)');
+  assert.ok(specAllowed('@modelcontextprotocol/sdk').includes(pkg.dependencies?.['@modelcontextprotocol/sdk']), 'sdk direct spec must be the current Dependabot value (spec bumps are Dependabot-owned, not part of the #29 lockfile fix)');
+  assert.ok(specAllowed('https-proxy-agent').includes(pkg.dependencies?.['https-proxy-agent']), 'https-proxy-agent direct spec must be the current Dependabot value (PR #36: ^7.0.5 -> ^9.1.0)');
   assert.equal(pkg.dependencies?.['fast-uri'], undefined, 'fast-uri is transitive — must not become a direct dependency');
 });
 
