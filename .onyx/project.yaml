@@ -4,8 +4,13 @@
 # in an isolated Docker audit workspace on base SHA
 # 02d71ebde1e477027879c74b18a602309cf16cf8 (branch main; live main at audit time)
 # and re-verified at PR #41 head df6f54ab39733dd8cb5a2ca65d12c04399a55e02
-# (dependabot/npm_and_yarn/types/node-26.6.2) in task t_ed537024. See
-# ../baseline.json for pass/fail evidence and ../audit-logs/ for raw output.
+# (dependabot/npm_and_yarn/types/node-26.6.2) in task t_ed537024.
+# Re-verified at PR #36 audited head 1571919c6488e7f77623d19844e58d0a7428cdf5
+# (dependabot/npm_and_yarn/https-proxy-agent-9.1.0, live main 2aa1eb65 merged in)
+# in task t_440ddbc7 (2026-10-03): npm ci --ignore-scripts, npm audit
+# --audit-level=high, npm run build, npm run lint, npm test ALL pass (10/10).
+# See ../baseline.json for pass/fail evidence and ../audit-logs/ +
+# devlogs/route-t_440ddbc7/ for raw output.
 #
 # Do NOT store credentials or secrets here. Proxmox credentials are supplied at
 # runtime via environment variables (see environment below).
